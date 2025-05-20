@@ -4,7 +4,6 @@
 #include<vector>
 #include<fstream>
 
-SDL_Window* window = SDL_CreateWindow("text",SDL_WINDOWPOS_UNDEFINED,SDL_WINDOWPOS_UNDEFINED,640,480,SDL_WINDOW_SHOWN);
 
 class TextInput{
     private:
@@ -48,24 +47,15 @@ class TextInput{
         SDL_Cursor * hovercursor;
     public:
         TextInput(SDL_Rect* dimen,int font_size){
-            std::fstream boy("dimensions.txt");
 
             //OVERALL SETTINGS FOR THE TEXT-INPUT (ALL SURFACES INCLUDED)
             WholeSettings.FontSize = font_size;
             WholeSettings.Dimensions = {dimen->x+5,dimen->y+5,dimen->w-10,dimen->h-10};
             WholeSettings.gFont = TTF_OpenFont("times_new_roman.ttf",WholeSettings.FontSize);
-            boy<<"Dimensions(x): "<<WholeSettings.Dimensions.x<<std::endl;
-            boy<<"Dimensions(y): "<<WholeSettings.Dimensions.y<<std::endl;
-            boy<<"Dimensions(w): "<<WholeSettings.Dimensions.w<<std::endl;
-            boy<<"Dimensions(h): "<<WholeSettings.Dimensions.h<<std::endl;
             WholeSettings.LineSpacing = TTF_FontLineSkip(WholeSettings.gFont);
-            boy<<"Line Spacing: "<<WholeSettings.LineSpacing<<std::endl;
             WholeSettings.FontFamily = const_cast<char *>(TTF_FontFaceFamilyName(WholeSettings.gFont));
-            boy<<"Font Family: "<<WholeSettings.FontFamily<<std::endl;
             WholeSettings.FontStyle = TTF_GetFontStyle(WholeSettings.gFont);
-            boy<<"Font Style: "<<WholeSettings.FontStyle<<std::endl;
             WholeSettings.CharSpacing = TTF_GetFontKerning(WholeSettings.gFont);
-            boy<<"Char Spacing: "<<WholeSettings.CharSpacing<<std::endl;
             WholeSettings.fg = {0,0,0,0};
             WholeSettings.bg = {255,255,255,255};
             WholeSettings.direction = TTF_DIRECTION_LTR;
@@ -90,8 +80,6 @@ class TextInput{
             TTF_SizeUTF8(WholeSettings.gFont,temp.content.c_str(),&temp.settings.Dimensions.w,&temp.settings.Dimensions.h);
             //LINE-WISE SETTINGS
             textinputs temp2;
-            boy<<"Line w: "<<temp.settings.Dimensions.w<<std::endl;
-            boy<<"Line h: "<<temp.settings.Dimensions.h<<std::endl;
             temp2.innertexts.push_back(temp);
             temp2.alignment = TTF_GetFontWrappedAlign(WholeSettings.gFont);
             temp2.maxHeight = temp.settings.Dimensions.h;
@@ -104,7 +92,6 @@ class TextInput{
 
             //GLOBAL ALIGNMENT
             alignment = TTF_GetFontWrappedAlign(WholeSettings.gFont);
-            boy.close();
         }
 
         bool check_overflow_horizontal(textinputs single_line){
@@ -148,25 +135,7 @@ class TextInput{
             }
         }
 
-        void checking_here(){
-            std::ofstream boy("checker.txt",std::ios::app);
-            int lineno=0;
-            for (textinputs a : Lines){
-                for (LinePart b: a.innertexts){
-                    boy<<"Line "<<lineno<<"x:"<<b.settings.Dimensions.x<<std::endl;
-                    boy<<"Line "<<lineno<<"y:"<<b.settings.Dimensions.y<<std::endl;
-                    boy<<"Line "<<lineno<<"w:"<<b.settings.Dimensions.w<<std::endl;
-                    boy<<"Line "<<lineno<<"h:"<<b.settings.Dimensions.h<<std::endl;
-                    boy.flush();
-                }
-                lineno++;
-            }
-            boy.close();
-        }
-
         void render(SDL_Renderer * renderer) {
-            checking_here();
-            std::ofstream boy("renderman.txt", std::ios::app);
             int lineno = 0;
             SDL_Texture* texture = NULL;
             SDL_Surface* temp_surface = NULL;
@@ -186,22 +155,13 @@ class TextInput{
                 // Render each LinePart in the current line
                 for (LinePart b : a.innertexts) {
                     temp_surface = TTF_RenderUTF8_Blended(b.settings.gFont, b.content.c_str(), b.settings.fg);
-                    boy<<"Before\n";
-                    boy << "Line " << lineno << " x: " << b.settings.Dimensions.x << " y: " << b.settings.Dimensions.y;
-                    boy << " w: " << b.settings.Dimensions.w << " h: " << b.settings.Dimensions.h << std::endl;
                     texture = SDL_CreateTextureFromSurface(renderer,temp_surface);
                     SDL_RenderCopy(renderer,texture,NULL,&b.settings.Dimensions);
-
-                    // Log dimensions for debugging
-                    boy<<"After\n";
-                    boy << "Line " << lineno << " x: " << b.settings.Dimensions.x << " y: " << b.settings.Dimensions.y;
-                    boy << " w: " << b.settings.Dimensions.w << " h: " << b.settings.Dimensions.h << std::endl;
                      // Free after each inner blit
                 }
                 lineno++;
             }
             SDL_FreeSurface(temp_surface);
-            boy.close();
         }
 
 
@@ -214,9 +174,6 @@ class TextInput{
         }
 
         void putthetext(char a){
-            std::ofstream megaman("textman.txt",std::ios::app);
-            megaman<<"ye raha: "<<WholeSettings.Dimensions.w<<std::endl;
-            megaman<<"ye raha: "<<Lines[0].innertexts[0].settings.Dimensions.w<<std::endl;
             if (blinkervalues.linepartindex==-1){
                 Lines[blinkervalues.num].innertexts[blinkervalues.blinkersurfacelinepartindex].content += a;
             }
@@ -317,23 +274,15 @@ class TextInput{
                 }
             }
             move_blinker(1);
-            megaman.close();
 
         }
 
         void removethetext() {
-            std::ofstream ui("remover.txt",std::ios::app);
-            ui<<WholeSettings.Dimensions.w<<std::endl;
-            ui<<Lines[0].innertexts[0].settings.Dimensions.w<<std::endl;
-            ui<<"Started"<<std::endl;
-            ui.flush();
             int linechecker = blinkervalues.num;
             int blinkerpart = blinkervalues.blinkersurfacelinepartindex;
             int linepart = blinkervalues.linepartindex;
             int alpha = 0;
             move_blinker(-1);
-            ui<<"did u see me"<<std::endl;
-            ui.flush();
             if (linechecker==0 && linepart==-1){
                 return;
             }
@@ -471,12 +420,10 @@ class TextInput{
                 Lines[linechecker].innertexts[blinkerpart].settings.Dimensions.w -= (fw + Lines[linechecker].innertexts[blinkerpart].settings.CharSpacing);
                 Lines[linechecker].innertexts[blinkerpart].content.erase(linepart);
             }
-            ui.close();
         }
    
 
         void move_blinker(int value){
-            std::ofstream mega("blinker.txt",std::ios::app);
             if (value==1){
                 if (blinkervalues.linepartindex==(Lines[blinkervalues.num].innertexts[blinkervalues.blinkersurfacelinepartindex].content.size()-1)){
                     if (blinkervalues.blinkersurfacelinepartindex==(Lines[blinkervalues.num].innertexts.size()-1)){
@@ -526,7 +473,6 @@ class TextInput{
                         blinkervalues.num--;
                         blinkervalues.blinkersurfacelinepartindex = Lines[blinkervalues.num].innertexts.size()-1;
                         blinkervalues.linepartindex = Lines[blinkervalues.num].innertexts[blinkervalues.blinkersurfacelinepartindex].content.size()-1;
-                        mega<<Lines[blinkervalues.num].innertexts[blinkervalues.blinkersurfacelinepartindex].content.size();
                         blinkervalues.BlinkerPos.x = Lines[blinkervalues.num].innertexts[blinkervalues.blinkersurfacelinepartindex].settings.Dimensions.x + Lines[blinkervalues.num].innertexts[blinkervalues.blinkersurfacelinepartindex].settings.Dimensions.w - (Lines[blinkervalues.num].innertexts[blinkervalues.blinkersurfacelinepartindex].settings.CharSpacing/2);
                         blinkervalues.BlinkerPos.y = Lines[blinkervalues.num].innertexts[blinkervalues.blinkersurfacelinepartindex].settings.Dimensions.y;
                     }
@@ -538,38 +484,18 @@ class TextInput{
                     std::string justtemp="";
                     int wagaini,hagaini;
                     blinkervalues.linepartindex -=1;
-                    mega<<blinkervalues.num<<std::endl;
-                    mega<<blinkervalues.blinkersurfacelinepartindex<<std::endl;
-                    mega<<blinkervalues.linepartindex<<std::endl;
-                    mega<<"x: "<<blinkervalues.BlinkerPos.x<<std::endl;
-                    mega<<"y: "<<blinkervalues.BlinkerPos.y<<std::endl;
-                    mega<<Lines[blinkervalues.num].innertexts[blinkervalues.blinkersurfacelinepartindex].content;
-                    mega<<Lines[blinkervalues.num].innertexts[blinkervalues.blinkersurfacelinepartindex].content[blinkervalues.linepartindex]<<std::endl;
                     justtemp.push_back(Lines[blinkervalues.num].innertexts[blinkervalues.blinkersurfacelinepartindex].content[blinkervalues.linepartindex + 1]);
                     TTF_SizeUTF8(Lines[blinkervalues.num].innertexts[blinkervalues.blinkersurfacelinepartindex].settings.gFont,justtemp.c_str(),&wagaini,&hagaini);
-                    mega<<wagaini<<std::endl;
                     blinkervalues.BlinkerPos.x -= (wagaini + Lines[blinkervalues.num].innertexts[blinkervalues.blinkersurfacelinepartindex].settings.CharSpacing);
                 }
             }
             TTF_SizeUTF8(WholeSettings.gFont,"|",&blinkervalues.BlinkerPos.w,&blinkervalues.BlinkerPos.h);
-            mega.close();
         }
 
         void HandleEvents(SDL_Event *e) {
-            std::ofstream he("HandleEvents.txt", std::ios::app);
-            he<<"Handle Started!";
-            he<<"\n";
-            he.flush();
-
             // Check for mouse clicks and handle accordingly
             if (e->type == SDL_MOUSEBUTTONDOWN && active) {
-                he<<"Mouse Button detected!";
-                he<<"\n";
-                he.flush();
                 if (e->button.button == SDL_BUTTON_LEFT) {
-                    he<<"left click";
-                    he<<"\n";
-                    he.flush();
                     int temp_x, temp_y;
                     SDL_GetMouseState(&temp_x, &temp_y);
                     int line_no = 0;
@@ -580,9 +506,6 @@ class TextInput{
                             temp_y < (temp.maxHeight + temp.maxLineSpacing / 2)) {
                             
                             SDL_SetCursor(hovercursor);
-                            he<<"Cursor Changed!";
-                            he<<"\n";
-                            he.flush();
                             int star = 0;
                             int linepartin = 0;
 
@@ -592,10 +515,6 @@ class TextInput{
                                     int just_there_w, just_there_h;
                                     std::string man2 = "|";
                                     blinker = true;
-                                    he<<"Blinker set";
-                                    he<<"\n";
-                                    he.flush();
-
                                     blinkervalues.num = line_no;
                                     blinkervalues.blinkersurfacelinepartindex = 0;
                                     blinkervalues.linepartindex = -1;
@@ -603,9 +522,6 @@ class TextInput{
                                     blinkervalues.BlinkerPos = {temp2.settings.Dimensions.x, temp2.settings.Dimensions.y, just_there_w, just_there_h};
                                     break;
                                 } else {
-                                    he<<"Blinker set else statement";
-                                    he<<"\n";
-                                    he.flush();
                                     for (char b : temp2.content) {
                                         int just_there_w, just_there_h;
                                         std::string man(1, b);
@@ -636,21 +552,7 @@ class TextInput{
 
             // Process text input (SDL_TEXTINPUT) if blinker is active
             if (e->type == SDL_TEXTINPUT && blinker) {
-                he<<"Text Input begin\n Character:- "<<*e->text.text;
-                he<<"\n";
-                he.flush();
                 putthetext(*e->text.text);
-                he<<"Text Input over\n";
-                he<<Lines[0].innertexts[0].content;
-                if (Lines.size()==2){
-                    he<<"\nLine2"<<Lines[1].innertexts[0].content;
-                }
-                else if (Lines.size()==3){
-                    he<<"\nLine2"<<Lines[1].innertexts[0].content;
-                    he<<"\nLine3"<<Lines[2].innertexts[0].content;
-                }
-                he<<"\n";
-                he.flush();
             }
             bool isPasting = false;
 
@@ -678,108 +580,55 @@ class TextInput{
 
             // Process specific keys only for SDL_KEYDOWN
             if (e->type == SDL_KEYDOWN && blinker) {
-                he<<"Key pressed!";
-                he<<"\n";
-                he.flush();
                 switch (e->key.keysym.sym) {
                     case SDLK_LEFT:
                         move_blinker(-1);
-                        he<<"Blinker moved left";
-                        he<<"\n";
-                        he.flush();
                         break;
                     case SDLK_RIGHT:
                         move_blinker(1);
-                        he<<"Blinker moved right";
-                        he<<"\n";
-                        he.flush();
                         break;
                     case SDLK_RETURN:
-                        he<<"Enter the castle";
-                        he<<"\n";
-                        he.flush();
                         // Add any enter-key specific behavior here
                         break;
                     case SDLK_BACKSPACE:
-                        he<<"Backspace like a pro part 1";
-                        he<<"\n";
-                        he.flush();
                         removethetext();
-                        he<<"Backspace like a pro";
-                        he<<"\n";
-                        he.flush();
                         break;
                     default:
-                        he<<"Default behaviour";
-                        he<<"\n";
-                        he.flush();
                         // Ignore other keys
                         break;
                 }
             }
-            he.close();
         }
 
 
 
         void run(SDL_Event *e,SDL_Renderer* renderer){
-            std::ofstream f("Running.txt",std::ios::app);
-            f<<"Garbage Collector called!";
-            f<<"\n";
-            f.flush();
             garbage_collector();
-            f<<"Handle Events called!";
-            f<<"\n";
-            f.flush();
             HandleEvents(e);
             renderblinker(renderer);
-            f<<"Blinker just received!";
-            f<<"\n";
-            f.flush();
             render(renderer); //this blits some surfaces to the main surface
-            f<<"Rendered Text Received!";
-            f<<"\n";
-            f.flush();
-            f<<"Surface Blitted!";
-            f<<"\n";
-            f.flush();
-            f<<"Window updated!";
-            f<<"\n";
-            f.flush();
-            f.close();
         }
 };
 
-int main(int argc, char* argv[]) {
-    std::fstream newgi("MainFunction.txt", std::ios::out);
-    
+int main(int argc, char* argv[]) {    
     if (TTF_Init() == -1) {
         return -1;
     }
     
     if (SDL_Init(SDL_INIT_VIDEO) < 0) {
-        newgi << "SDL init failed: " << SDL_GetError() << std::endl;
-        newgi.flush();
         TTF_Quit();
         return -1;
     }
-    
-    newgi << "Initialization successful" << std::endl;
-    newgi.flush();
+    SDL_Window* window = SDL_CreateWindow("text",SDL_WINDOWPOS_UNDEFINED,SDL_WINDOWPOS_UNDEFINED,640,480,SDL_WINDOW_SHOWN);
 
     SDL_Rect displayarea = {0, 0, 300, 300};
     TextInput basic(&displayarea,16);
 
     if (window == NULL) {
-        newgi << "Window is NULL" << std::endl;
-        newgi.flush();
         SDL_Quit();
         TTF_Quit();
         return -1;
     }
-    
-    newgi << "Window created successfully" << std::endl;
-    newgi.flush();
 
     SDL_Renderer* renderer = SDL_CreateRenderer(window,-1,SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
 
@@ -798,19 +647,13 @@ int main(int argc, char* argv[]) {
             basic.run(&e,renderer);
             SDL_RenderPresent(renderer);
             ggg++;
-            newgi<<"Run came back : "<<std::to_string(ggg)<<std::endl;
-            newgi.flush();
         }
     }
 
     SDL_StopTextInput();
-    newgi << "Exiting main loop" << std::endl;
-    newgi.flush();
-    
     SDL_DestroyWindow(window);
     SDL_Quit();
     TTF_Quit();
-    newgi.close();
-    
+
     return 0;
 }
